@@ -1,5 +1,8 @@
-==Configuration
+== How to run ?
+run upload.php
 
+
+== Configuration
 Need to configure some settings in php.ini and file permissions
 
 - php.ini
