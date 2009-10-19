@@ -1,8 +1,17 @@
 ==Configuration
 
-Need to configure some settings in php.ini
+Need to configure some settings in php.ini and file permissions
+
+- php.ini
 There are three important settings for the prototype:
 
 post_max_size = 20M   // suggest at least 20M
 upload_max_filesize = 20M  // suggest at least 20M
 error_reporting = E_ALL & ~E_NOTICE //igore notice error message
+
+- file permission
+Give php the permission to write the directories. "tmp" is the temprary directory for chunking, "uploaded" is the directory upladed to. storage.txt is the file saving upload states.
+In linux:
+chmod 777 tmp
+chmod 777 uploaded 
+chmod 777 storage.txt
