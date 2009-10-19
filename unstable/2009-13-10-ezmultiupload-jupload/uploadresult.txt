@@ -1,0 +1,6 @@
+This is the result:
+name => 3113676192374318797.jpg 
+type => image/jpeg 
+tmp_name => /private/var/tmp/phpgzfo6j 
+error => 0 
+size => 662799 

@@ -1,0 +1,117 @@
+
+As always, a lot of things can be made better:
+
+TODO list:
+
+
+- Error in Java with picture (local on my computer): Comprendre/floral (erreur in Java).jpg
+Answer to:
+http://forum.coppermine-gallery.net/index.php/topic,60184.msg297777.html#new
+
+- Check applet behavior against HTTP1/0
+Answer to:
+http://forum.coppermine-gallery.net/index.php/topic,59311.new.html#new
+
+- Remove debug about before getUploadLength.
+
+- PictureFileData.tooBigPicture()
+=> Just write the warning in the debugfile. Should open a messageBox, but this generates a deadlock. 
+(because the JDialogBox.Message tries to lock the result of new AWTTreeLock() ??)
+Should generate a functional exception, that would be displayed without locks?
+
+- Try Cobertura
+(docs in /Java)
+
+- Analyse findbugs report.
+(docs on HTTrack)
+
+- Tests: remove the /tests folder, and the Test classes from the packaged jar file.
+
+- STOP button: problems in chunk upload.
+Add a way to advertise the server, that the upload was stopped.
+https://sourceforge.net/forum/forum.php?thread_id=3175188&forum_id=199107
+
+- Manage tiff pictures
+See Feature request on sourceforge.
+
+- The applet should not ask the user to send the error to urlToSendErrorTo, when there is a functional error
+(e.g.: wrong file type, file too big...)
+
+- In picture mode: The file size should be checked after file preparation
+(would not block files of 3M, in my standard coppermine conf)
+
+- In picture mode (Coppermine?)
+Uploading an empty text file (niv1.txt) generates an error.
+Bug n°: 2793404.
+
+- Add a HowToOptimize page
+(allowHttpPersistent, nbFilesPerRequest...)
+
+- Make FTP upload (and HTTP?) work with space in the path
+
+- Check if it's possible to make quicker the add of thousands of files.
+Probably not possible... :-(
+
+- kb or kB ?
+kB should by kilo bytes. Answer in 'Open Discussions'
+
+- When the file filter contains too many file extensions, the browser window may be larger than the screen!
+=> Add an option to display or not this list ?   Or automatically hide the list of file extensions, when they are too many.
+Answer to Heroes, on Coppermine PM.
+
+- BUG: mimetype works only when the extension is in lower case.
+Response to: https://sourceforge.net/forum/forum.php?thread_id=2925505&forum_id=199107
+
+- BUG: relpathinfo not being set when dragging
+https://sourceforge.net/tracker2/index.php?func=detail&aid=2529111&group_id=59144&atid=490053
+The content of relpathinfo is not the same for dropped files and for files added by the file chooser.
+Corrected (is Ok in 4.2.0)
+
+
+- Finish automation (ant script), about translations.
+=> Generated translation/generated/available_translations.html
+   - Check %1, %2... parameters in translated text.
+   - Check Maintainer
+   - Complete the language, which is UTF-8 file is to rebuild.
+=> Make a link to it from:
+   - the doc
+   - the main readme.
+
+
+- When a file is too big, it could non-blocking, and up to the user to go on or not.
+Suggestion from Michel Verstraeten, in https://sourceforge.net/forum/forum.php?thread_id=2593046&forum_id=199106 
+
+- Document the content of the HTTP post of the applet (folders...).
+
+- Message incorrect (no 'wait for server response' when using the applet with Coppermine)
+- What to do with NoAlertPolicy ?
+
+- implement setUncaughtExceptionHandler for the uploading threads.
+
+- 99.111.222.333 - - [19/Nov/2008:15:51:48 -0800] "GET /app/wjhk/jupload2/lang/lang_en_US.properties HTTP/1.1" 404 1123 "-" "Mozilla/4.0 (Windows XP 5.1) Java/1.6.0_07" 
+Response to https://sourceforge.net/forum/message.php?msg_id=5678495
+
+- Enable compression
+- Add a new parameter, to control the current applet directory, that is: the directory that should be used
+when first clicking on the 'Browse' button.
+Answer to:
+http://imp.free.fr/horde/util/go.php?url=http%3A%2F%2Fforum.coppermine-gallery.net%2Findex.php%3Ftopic%3D54149.new%3Btopicseen%23new&Horde=6a59e39abfc69075abe6e56527d514f9
+
+- Integrate the proposal in the 'Trying to Add Upload Path via Javascript'
+http://sourceforge.net/forum/forum.php?thread_id=2107422&forum_id=199107
+
+- Check compiling on a fresh eclipse install, with the given build.xml
+  (see http://sourceforge.net/forum/forum.php?thread_id=2048291&forum_id=199107).
+- Debug file output: should be enabled only in debug mode.
+- Check the wiki
+- Depending on the camera configuration, metadata coming from Canon (10D, 20D, 30D) may not work with picture 
+resizing: colors of the picture resized are wrong. Prevent transmition of metadata, with the pictureTransmitMetadata 
+parameter corrects the problem: there is a big in the SUN JRE.
+==> This is a Java bug.
+- Add (at least) a link to the sample in http://sourceforge.net/forum/forum.php?thread_id=1807811&forum_id=199107
+- Allows upload from the demo site, or inform that it doesn't work.
+- Picture mode: implement target picture format (to be changed to another name ?)
+- Picture mode: applet parameter to control the size of the preview on the file chooser.
+- Restore compatibility with standard Java application (it currently only works as an applet).
+- Remove support for the deprecated applet parameter filenameEncoding.
+- Also upload empty sub-directories (must be conditioned by a new applet parameter).

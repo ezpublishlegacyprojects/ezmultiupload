@@ -1,0 +1,499 @@
+<?xml version="1.0"?>
+<!--
+  $Id: build.xml 783 2009-06-10 05:34:49Z etienne_sf $
+  
+  =======================================================================
+         Ant build file FOR JUpload2
+         
+         Version $Revision: 783 $
+         
+         Donated by CrossmarX BV, Amsterdam, The Netherlands, 2007.
+  =======================================================================
+-->
+
+<project name="jupload2" default="deploy" basedir=".">
+
+	<!--
+     =======================================================================
+	    Property definitions
+     =======================================================================
+  -->
+
+	<property environment="env" />
+
+	<property name="build.sysclasspath" value="ignore" />
+
+	<!-- The use of the .ant.properties file gives the user a chance to override 
+	     without editing this file (and without typing -D each time it compiles it)
+	     We use two files here in the users homedir: .ant.properties for generic
+	     settings and ant-jupload2.properties with specifies project-specific settings
+	     and superseedes settings.
+	      -->
+	<property file="${user.home}/ant-${ant.project.name}.properties" />
+
+	<property file="${user.home}/.ant.properties" />
+
+	<property name="keystore" value="${basedir}/.tmpstore" />
+
+	<property name="alias" value="jupload" />
+
+	<!-- If you leave this undefined, the password is requested
+	     interactively during build, or loaded from the global parameters
+	
+		<property name="storepass" value="test123" /> 
+    -->
+
+	<property name="path.build" value="${basedir}/build" />
+	<property name="path.doc" value="${basedir}/doc" />
+	<property name="path.lib" value="${basedir}/lib" />
+	<property name="path.src" value="${basedir}/src" />
+	<property name="path.temp" value="${basedir}/TEMP" />
+	<property name="path.wwwroot" value="${basedir}/wwwroot" />
+
+	<!-- Let's load the existing values of the svn.properties -->
+	<property name="path.svnProperties"
+	          value="${path.src}/conf/svn.properties" />
+	<property file="${path.svnProperties}" prefix="currentSvnProperties." />
+
+	<property name="standard.compile.excludes" value="**/*.class,**/*Test.java" />
+
+	<!-- The applet is currently compiled for the 1.5 JRE -->
+	<property name="javac.target" value="1.5" />
+
+	<property name="debug" value="true" />
+
+	<property name="compilation.failonerror" value="true" />
+
+	<property name="deprecation" value="false" />
+
+	<property name="optimize" value="true" />
+
+	<property name="svn.use.javahl" value="true" />
+
+	<tstamp>
+		<format property="TODAY_FULL" pattern="MM/dd/yyyy hh:mm aa" />
+	</tstamp>
+
+	<!--
+    *
+    * Properties related to the source tree
+    *
+    -->
+	<property name="jupload2.package" value="wjhk" />
+
+	<property name="manifest" value="${path.build}/META-INF/MANIFEST.MF" />
+
+
+	<!--
+	*
+	* Classpath definitions
+	*
+   -->
+	<path id="standard.class.path">
+		<pathelement location="${path.src}" />
+		<pathelement location="${path.wwwroot}/plugin.jar" />
+		<pathelement location="${path.wwwroot}/jakarta-commons-net.jar" />
+	</path>
+
+	<!-- path to the svnant libraries. -->
+	<path id="svnant.classpath">
+		<fileset dir="${basedir}/lib/svn-ant">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<!-- load the svn task -->
+	<typedef resource="org/tigris/subversion/svnant/svnantlib.xml"
+	         classpathref="svnant.classpath" />
+
+	<!-- Definition du classpath des tâches ant additionnelles  -->
+	<path id="ant.tasks.ant-contrib.classpath">
+		<fileset dir="lib">
+			<include name="ant-contrib.jar" />
+		</fileset>
+	</path>
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties"
+	         classpathref="ant.tasks.ant-contrib.classpath" />
+
+	<!--
+	===================================================================
+	     FTP to update the jupload web site.
+	===================================================================
+	-->
+	<target name="prepare_ftp"
+	        description="Publish the wwwroot directory to the jupload web site">
+
+
+		<!-- Let's copy the web site, to remove the svn stuff -->
+		<delete dir="${path.temp}/wwwroot" />
+		<echo message="Exporting wwwroot to ${path.temp}" level="info" />
+		<svn javahl="${svn.use.javahl}">
+			<export srcPath="${path.wwwroot}"
+			        destPath="${path.temp}/wwwroot"
+			        force="true" />
+		</svn>
+
+		<!-- 
+			All these properties are asked to the user. They should not be stored in a config file.
+			But:
+			they can be added in the eclipse launch properties, so that they are not in SVN, nor asked to the user.
+		
+		<input addproperty="jupload.ftp.host" />
+		<input addproperty="jupload.ftp.port" />
+		<input addproperty="jupload.ftp.remotedir" />
+		<input addproperty="jupload.ftp.userid" />
+		<input addproperty="jupload.ftp.password" / -->
+		<!-- Let's publish the web site, from the previous export -->
+		<!--
+		  THIS DOES'N WORK. I NEED TO PLAY WITH FTP LIBRARIES, AND I'M NOT SURE THAT FTPS FOR SOURCEFORGE WILL WORK WITH IT. 
+		ftp server="${jupload.ftp.host}"
+		     port="${jupload.ftp.port}"
+		     userid="${jupload.ftp.userid}"
+		     password="${jupload.ftp.password}"
+		     remotedir="${jupload.ftp.remotedir}">
+			<fileset dir="${path.wwwroot}/wwwroot" />
+		</ftp -->
+	</target>
+
+	<!--
+	===================================================================
+	     Build, Compile
+	===================================================================
+	-->
+
+	<target name="-proxy" if="proxy.host">
+		<!-- These defaults can be overridden in the users's properties -->
+		<property name="proxy.port" value="3128" />
+		<property name="proxy.user" value="" />
+		<property name="proxy.pass" value="" />
+		<setproxy proxyhost="${proxy.host}"
+		          proxyport="${proxy.port}"
+		          proxyuser="${proxy.user}"
+		          proxypassword="${proxy.pass}" />
+		<property name="javadoc.proxy"
+		          value=" -J-DproxySet=true -J-DproxyHost=${proxy.host} -J-DproxyPort=${proxy.port} -J-DproxyUserName=${proxy.user} -J-DproxyPassword=${proxy.pass} " />
+	</target>
+
+	<target name="-noproxy" unless="proxy.host">
+		<property name="javadoc.proxy" value="" />
+	</target>
+
+	<!-- Prepare the build
+    -->
+	<target name="prepare" description="Create the temporary build directories">
+		<mkdir dir="${path.build}" />
+		<copy toDir="${path.build}/wjhk/jupload2/lang">
+			<fileset dir="${path.src}/wjhk/jupload2/lang" />
+		</copy>
+		<copy toDir="${path.build}/images">
+			<fileset dir="${path.src}/images" />
+		</copy>
+		<tstamp>
+			<format property="now" pattern="yyyy-MMM-dd HH:mm" locale="en" />
+		</tstamp>
+	</target>
+
+
+
+	<!-- Build, Compile
+     -->
+	<target name="build"
+	        depends="clean, compile"
+	        description="Delete class files and compile java sources.">
+	</target>
+
+	<target name="compile" depends="compile_all" />
+
+	<target name="compile_all" depends="prepare,-generate_svn_properties">
+		<antcall target="compile_impl">
+			<param name="includes" value="wjhk/**" />
+		</antcall>
+	</target>
+
+	<target name="compile_impl">
+		<echo message="Javac current target: ${javac.target}" level="info" />
+		<javac srcdir="${path.src}"
+		       destdir="${path.build}"
+		       debug="${debug}"
+		       target="${javac.target}"
+		       failonerror="${compilation.failonerror}"
+		       deprecation="${deprecation}"
+		       optimize="${optimize}"
+		       includes="${includes}"
+		       excludes="${standard.compile.excludes}">
+			<classpath refid="standard.class.path" />
+		</javac>
+	</target>
+
+	<!--
+=================================================
+ Some Clean up targets
+=================================================
+  -->
+	<target name="clean" description="Remove all class files.">
+		<delete failonerror="false">
+			<fileset dir="${path.build}">
+				<patternset>
+					<include name="**/*.class" />
+				</patternset>
+			</fileset>
+		</delete>
+		<delete failonerror="false" dir="${path.build}/META-INF" />
+		<delete failonerror="false" file="${basedir}/.tmpstore" />
+	</target>
+
+	<target name="cleanup" description="Remove temporary build directory">
+		<delete dir="${path.build}" />
+		<delete>
+			<fileset dir="${path.build}" includes="revision.properties" />
+		</delete>
+	</target>
+
+	<target name="javadoc"
+	        depends="-proxy,-noproxy"
+	        description="Generate javadoc">
+		<javadoc access="package"
+		         author="true"
+		         classpath="${path.wwwroot}/plugin.jar;${path.wwwroot}/jakarta-commons-net.jar;${path.lib}/junit-4.5.jar"
+		         destdir="${path.doc}"
+		         doctitle="JUpload - Multiple file upload applet"
+		         nodeprecated="false"
+		         nodeprecatedlist="false"
+		         noindex="false"
+		         nonavbar="false"
+		         notree="false"
+		         packagenames="wjhk.jupload2.policies,wjhk.jupload2.filedata,wjhk.jupload2,wjhk.jupload2.exception,wjhk.jupload2.gui,wjhk.jupload2.upload"
+		         source="1.5"
+		         sourcepath="src"
+		         splitindex="true"
+		         use="true"
+		         version="true"
+		         additionalparam="${javadoc.proxy}">
+			<link href="http://java.sun.com/j2se/1.5.0/docs/api/" />
+		</javadoc>
+		<fixcrlf srcdir="${path.doc}" includes="**/*.html">
+		</fixcrlf>
+		<!-- Let's copy doc files to the wwwroot/doc directory -->
+		<copy toDir="${path.wwwroot}/doc">
+			<fileset dir="${path.doc}" />
+		</copy>
+	</target>
+
+	<!-- When compiling offline, or not connected to a SVN, the info in '-generate_svn_properties' doesn't
+	work. We then put the available revision in svn.revision.max -->
+	<target name="-get_svn_properties">
+		<svn javahl="${svn.use.javahl}" failonerror="false">
+			<status path="${path.src}" lastChangedDateProperty="svn.date" />
+			<!-- info gives the up to date info, but need to be connected ...-->
+			<info target="${path.src}" propPrefix="svn." />
+			<ignore file="${path.src}/conf/svn.properties" />
+		</svn>
+	</target>
+	<target name="-default_version" unless="svn.revision.max">
+		<svn javahl="${svn.use.javahl}" failonerror="false">
+			<wcVersion path="${path.src}" prefix="svn." />
+		</svn>
+	</target>
+	<target name="-generate_svn_properties"
+	        depends="-get_svn_properties,-default_version">
+		<if>
+			<not>
+				<isset property="currentSvnProperties.buildNumber" />
+			</not>
+			<then>
+				<property name="currentSvnProperties.buildNumber" value="0" />
+			</then>
+		</if>
+		<math result="svn.buildNumber.incremented"
+		      operand1="${currentSvnProperties.buildNumber}"
+		      operation="+"
+		      operand2="1"
+		      datatype="int" />
+
+		<echo file="${path.svnProperties}" level="info">
+# WARNING - This file is auto-generated
+# ANY CHANGES WILL BE OVERWRITTEN BY THE BUILD-PROCESS!
+
+# Date of the compilation
+buildDate = ${TODAY_FULL}
+
+# Compilation number (is resetted to 0, if the svn.properties doesn't exist)
+buildNumber = ${svn.buildNumber.incremented}
+
+#Last revision commited. This compilation may contain other uncommitted changes.
+revision = ${svn.revision.max}
+
+#Date of the last src directory commit. 
+#Caution: file by file commit doesn't change this date.
+lastSrcDirModificationDate = ${svn.date}
+		</echo>
+
+		<copy toDir="${path.build}/conf">
+			<fileset dir="${path.src}/conf" />
+		</copy>
+	</target>
+
+	<target name="-getversion" depends="compile" unless="version">
+		<java classname="wjhk.jupload2.context.DefaultJUploadContext"
+		      classpath="${path.build}"
+		      outputproperty="version"
+		      failonerror="true" />
+	</target>
+
+
+	<!--
+ * Create wjhk.jupload.jar
+ -->
+	<target name="jar"
+	        depends="-getversion"
+	        description="Create unsigned jar in buld/">
+		<echo message="Creating manifest file (${manifest})" level="info" />
+		<mkdir dir="${path.build}/META-INF" />
+		<manifest file="${manifest}">
+			<attribute name="Built-By" value="${user.name}" />
+			<attribute name="Built-Date" value="${now}" />
+			<attribute name="Implementation-Title" value="JUpload2" />
+			<attribute name="Implementation-Version" value="${version}" />
+			<attribute name="Implementation-Company"
+			           value="http://jupload.sourceforge.net/" />
+			<section name="content">
+				<attribute name="todo" value="Add more info here." />
+			</section>
+		</manifest>
+		<echo message="Creating manifest seems ready" level="info" />
+		<jar jarfile="${path.build}/wjhk.jupload-V${version}.jar"
+		     manifest="${manifest}">
+			<fileset dir="${path.build}">
+				<include name="**/*.class" />
+			</fileset>
+			<fileset dir="${path.build}">
+				<include name="**/*.properties" />
+			</fileset>
+			<fileset dir="${path.build}">
+				<include name="images/**" />
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="customhowto"
+	        depends="javadoc"
+	        description="Creates the howto-customization.html">
+		<copy file="${path.doc}/wjhk/jupload2/policies/UploadPolicy.html"
+		      tofile="${path.build}/tmpdoc.html" />
+		<echo message="Extracting parameter section from javadoc of JUloadPolicy class"
+		      level="info" />
+		<replaceregexp file="${path.build}/tmpdoc.html"
+		               match=".*!-- ANT_COPYDOC_START -->(.*?).!-- ANT_COPYDOC_END -->.*"
+		               replace="\1"
+		               flags="s" />
+		<replaceregexp file="${path.build}/tmpdoc.html"
+		               match="a href=(.)\.\./\.\./\.\./"
+		               replace="a href=\1doc/"
+		               flags="sig" />
+		<loadfile srcfile="${path.build}/tmpdoc.html"
+		          property="doc.param.section">
+		</loadfile>
+		<echo message="Inserting parameter section into howto-customization.html"
+		      level="info" />
+		<replaceregexp file="${path.wwwroot}/howto-customization.html"
+		               match="(.*!-- ANT_INSERTDOC_START -->.)(.*?)(.!-- ANT_INSERTDOC_END -->.*)"
+		               replace="\1${doc.param.section}\3"
+		               flags="s" />
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: srcjar                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="srcjar"
+	        depends="clean,prepare,customhowto,deploy"
+	        description="Create source zip in build/">
+		<jar jarfile="${path.build}/jupload-V${version}-src.zip">
+			<fileset dir="${basedir}">
+				<include name="src/**/*" />
+				<include name="wwwroot/**/*" />
+				<include name="doc/**/*" />
+				<include name="build.xml" />
+				<include name="readme.txt" />
+				<!-- svn-ant stuff -->
+				<include name="lib/**/*" />
+				<!-- eclipse stuff -->
+				<include name=".settings/*" />
+				<include name=".externalToolBuilders/*" />
+				<include name=".classpath" />
+				<include name=".project" />
+				<include name="javadoc.xml" />
+				<include name="*.jardesc" />
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="-keystore.check">
+		<condition property="has.keystore">
+			<available file="${keystore}" />
+		</condition>
+	</target>
+
+	<target name="-askpasswd" unless="storepass">
+		<input message="Please enter keystore password:"
+		       addproperty="storepass" />
+	</target>
+
+	<target name="-createstore" depends="-keystore.check" unless="has.keystore">
+		<property name="storepass" value="test123" />
+		<genkey alias="${alias}"
+		        validity="3600"
+		        storepass="${storepass}"
+		        keystore="${keystore}">
+			<dname>
+				<param name="CN" value="JUpload" />
+				<param name="OU" value="Testing/Demo" />
+				<param name="O" value="JUpload.SourceForge.net" />
+			</dname>
+		</genkey>
+	</target>
+
+	<target name="signedjar"
+	        depends="jar,-createstore,-askpasswd"
+	        description="Create signed jar in build/">
+		<signjar jar="${path.build}/wjhk.jupload-V${version}.jar"
+		         keystore="${keystore}"
+		         storepass="${storepass}"
+		         alias="${alias}" />
+	</target>
+
+	<target name="deploy"
+	        depends="clean,signedjar"
+	        description="Build and copy signed jar into wwwroot/">
+		<copy file="${path.build}/wjhk.jupload-V${version}.jar"
+		      tofile="${path.wwwroot}/wjhk.jupload.jar"
+		      overwrite="true" />
+	</target>
+
+	<target name="dist"
+	        depends="clean,deploy,srcjar,prepare_ftp"
+	        description="Make a distribution (buld and pack everything)">
+		<echo message="Distribution is ready (the jupload web site has been exported in ${path.temp})"
+		      level="info" />
+	</target>
+
+</project>
+
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: xml
+sgml-omittag:nil
+sgml-shorttag:nil
+sgml-namecase-general:nil
+sgml-general-insert-case:lower
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:2
+sgml-indent-data:t
+sgml-parent-document:nil
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+ -->
+
