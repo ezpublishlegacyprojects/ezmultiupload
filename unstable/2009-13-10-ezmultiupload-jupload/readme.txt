@@ -18,3 +18,6 @@ In linux:
 chmod 777 tmp
 chmod 777 uploaded 
 chmod 777 storage.txt
+
+== Bugs
+When file name has space, the resuming might be not working.

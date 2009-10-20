@@ -37,7 +37,14 @@ class eZClientFileInfo
      */
     public function __construct( $file )
     {
-        $this->fileName=$file["name"];
+         // if it's a string(filename)
+        if( is_string( $file ) )
+        {
+            $this->fileName=$file;
+        }
+        else{
+            $this->fileName=$file["name"];
+        }
         $this->fileID=eZClientFileInfo::generateFileID($this);
     }
     

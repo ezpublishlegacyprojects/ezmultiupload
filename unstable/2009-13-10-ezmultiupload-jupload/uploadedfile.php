@@ -204,7 +204,7 @@ require_once( "uploadedfilehandler.php" );
     
     public function uploadedItemList()
     {
-        return $this->$uploadedItemList;
+        return $this->uploadedItemList;
     }
     
     public function tmpName()
