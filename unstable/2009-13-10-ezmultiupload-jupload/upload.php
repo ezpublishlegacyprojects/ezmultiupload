@@ -30,6 +30,15 @@ if($_GET["action"]=="status")
             {
                 array_push($resultArr,$item->part());
             }
+            // pop out the last one since the last part might be damaged because of broken process
+            // the will be a smart way to improve, which is catch the network exception.
+            if( !( $uploadedFile->finished() ) )
+            {
+                if( count( $resultArr ) > 0 )
+                {
+                    array_pop( $resultArr );
+                }
+            }
         }
         $result = implode( ",",$resultArr);
         if($result=="")
@@ -76,7 +85,5 @@ if($_FILES)
 	<param name="lookAndFeel" value="system"></param>
 	<param name="showLogWindow" value="false"></param>
 	Java runtime machine needed </applet></div>
-<script>
-</script>
 </body>
 </html>

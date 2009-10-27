@@ -21,3 +21,10 @@ chmod 777 storage.txt
 
 == Bugs
 When file name has space, the resuming might be not working.
+
+== Bugs fixed
+- fixed 1: Resuming will result in corrupted file. File size is correct, but file is corrupted (md5 sum of uploaded file doesn't match original file)
+- fixed 2: Progressbar is wrong when resuming:
+    * Upload a file, unplug network when reaching 60%
+    * Resume upload. Progressbar will go slowly from 0%-40%... Then it will jump from 40% to 100%
+    * Expected result : progressbar should jump from 0% to 60%, then go slowly from 60% to 100%
